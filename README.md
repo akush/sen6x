@@ -53,6 +53,40 @@ No dynamic allocation is used anywhere.
 Example pin map (ESP32-C3 / C6, adjust for your board): `SDA = GPIO 8`,
 `SCL = GPIO 9`.
 
+### Schematic
+
+The two ~10 kΩ resistors pull SDA and SCL up to the same 3V3 rail that powers
+the sensor. The left column is the ESP32; the right column is the SEN6x. A
+junction **dot (`●`)** means the wires connect; the `┼` where the SCL pull-up
+crosses the SDA line is **not** a connection (no dot).
+
+```
+   ESP32-C3/C6                                                SEN6x (0x6B)
+
+   3V3  ●─────●───────────●──────────────────────────────●  VDD
+              │           │
+            ┌─┴─┐       ┌─┴─┐
+            │10k│       │10k│      (pull-ups to 3V3)
+            └─┬─┘       └─┬─┘
+              │           │
+  GPIO8 ●─────●───────────┼──────────────────────────────●  SDA
+  GPIO9 ●─────────────────●──────────────────────────────●  SCL
+   GND  ●─────────────────────────────────────●──────────●  GND
+                                              └──────────●  SEL  (→ GND)
+```
+
+Connections, in plain terms:
+
+| Net | ESP32 pin | SEN6x pin | Pull-up |
+|-----|-----------|-----------|---------|
+| 3V3 | 3V3       | VDD       | — (also feeds both resistors) |
+| SDA | GPIO 8    | SDA       | 10 kΩ to 3V3 |
+| SCL | GPIO 9    | SCL       | 10 kΩ to 3V3 |
+| GND | GND       | GND **and** SEL | — |
+
+(If several I²C devices share the bus, fit **one** pair of pull-ups for the
+whole bus, not one pair per device.)
+
 ## Install & build — Arduino IDE (ESP32)
 
 1. Download this repository as a ZIP (**Code → Download ZIP**, or zip the
