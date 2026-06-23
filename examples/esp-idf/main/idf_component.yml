@@ -1,0 +1,10 @@
+# Dependency manifest for the example's `main` component.
+#
+# This pulls the SEN6x driver in as a local component. When you copy the
+# example out of this repository, either keep this relative `path:` (and a
+# matching folder), or drop the driver into your project's `components/`
+# directory and remove the dependency below.
+dependencies:
+  idf: ">=5.2"
+  sen6x:
+    path: ../../../
