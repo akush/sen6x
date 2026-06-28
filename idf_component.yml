@@ -1,0 +1,34 @@
+# ESP Component Registry manifest for the SEN6x driver.
+#
+# Publishes this component as `akush/sen6x` so projects can pull it in with:
+#   idf.py add-dependency "akush/sen6x"
+# (no git submodule / vendoring required).
+#
+# Ignored by the Arduino IDE.
+version: "1.1.0"
+description: >-
+  Driver for Sensirion SEN62, SEN63C, SEN65, SEN66, SEN68 and SEN69C
+  air-quality sensors with I2C auto-detection. Portable C99 core plus a
+  compile-time-switched transport (ESP-IDF new i2c_master API, or Arduino Wire).
+url: "https://github.com/akush/sen6x"
+repository: "https://github.com/akush/sen6x.git"
+documentation: "https://github.com/akush/sen6x/blob/main/README.md"
+issues: "https://github.com/akush/sen6x/issues"
+license: "MIT"
+tags:
+  - sensirion
+  - sen6x
+  - sen62
+  - sen63c
+  - sen65
+  - sen66
+  - sen68
+  - sen69c
+  - i2c
+  - air-quality
+  - particulate-matter
+  - co2
+  - voc
+  - nox
+dependencies:
+  idf: ">=5.2"

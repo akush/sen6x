@@ -101,17 +101,27 @@ the Wire backend because `ARDUINO` is defined.
 
 ## Install & build — ESP-IDF (≥ 5.2)
 
-Add the driver as a component:
+**Option A — ESP Component Registry (recommended).** From your IDF project
+root:
+
+```sh
+idf.py add-dependency "akush/sen6x"
+```
+
+This pulls the component in via the manager (no git/vendoring). It works on
+ESP-IDF 5.2 through 6.0 with no manual `REQUIRES` edits.
+
+**Option B — vendor it as a local component:**
 
 ```sh
 # from your IDF project root
 mkdir -p components
-git clone https://github.com/abhinav/sen6x components/sen6x
+git clone https://github.com/akush/sen6x components/sen6x
 # (or: git submodule add … components/sen6x, or copy the folder in)
 ```
 
 The [`CMakeLists.txt`](CMakeLists.txt) registers the component
-(`idf_component_register … REQUIRES driver`) and ESP-IDF discovers it
+(`idf_component_register … REQUIRES esp_driver_i2c`) and ESP-IDF discovers it
 automatically. In your `main` component, depend on it:
 
 ```cmake
@@ -239,6 +249,23 @@ datasheet's `CRC(0xBEEF) = 0x92` test vector.
 Get Product Name output** — if the printed name (`SEN62` / `SEN63C` / `SEN65` /
 `SEN66` / `SEN68` / `SEN69C`) is correct, the address, CRC, framing and
 execution-time waits are all working.
+
+## Changelog
+
+### 1.1.0
+- **Fix ESP-IDF 6.0 build:** the component now `REQUIRES esp_driver_i2c`
+  instead of the legacy `driver` meta-component. On ESP-IDF 6.0 `driver` no
+  longer propagates the `driver/i2c_master.h` include path, which broke the
+  build (`fatal error: driver/i2c_master.h: No such file or directory`).
+  `esp_driver_i2c` has existed since ESP-IDF 5.2, so this builds on 5.2 → 6.0.
+  No source or public-API changes; the Arduino build path is unaffected.
+- Added a root [`idf_component.yml`](idf_component.yml) so the driver can be
+  installed via `idf.py add-dependency "akush/sen6x"` from the ESP Component
+  Registry.
+- Added support for the SEN65, SEN68 and SEN69C variants (VOC/NOx, HCHO, CO₂).
+
+### 1.0.0
+- Initial release: SEN62, SEN63C and SEN66 with I2C auto-detection.
 
 ## License
 
