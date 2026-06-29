@@ -93,6 +93,7 @@ extern "C" void sen6x_port_delay_ms(uint32_t ms)
 /* ===================================================================== */
 
 #include "sen6x.h"          /* for the canonical SEN6X_I2C_ADDR */
+#include "sen6x_esp.h"      /* ESP-IDF-only bus accessor declaration */
 #include "driver/i2c_master.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -177,6 +178,13 @@ extern "C" int sen6x_port_read(uint8_t addr, uint8_t *data, size_t len)
 extern "C" void sen6x_port_delay_ms(uint32_t ms)
 {
     vTaskDelay(pdMS_TO_TICKS(ms));
+}
+
+/* Expose the driver-owned bus so the app can share the controller (e.g. add
+ * an OLED at 0x3C). NULL until sen6x_init() has created the bus. */
+extern "C" i2c_master_bus_handle_t sen6x_get_i2c_bus(void)
+{
+    return s_bus;
 }
 
 /* ===================================================================== */

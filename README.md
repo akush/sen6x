@@ -139,6 +139,33 @@ A complete buildable project is in [`examples/esp-idf/`](examples/esp-idf/).
 The port resolves to the `driver/i2c_master` backend because `ESP_PLATFORM` is
 defined (and `ARDUINO` is not).
 
+### Sharing the I2C bus with other devices (ESP-IDF)
+
+On single-controller targets like the ESP32-C3 there is only one I2C master,
+so anything else on the same SDA/SCL — an SSD1306/SH1106 OLED, an RTC, etc. —
+must attach to the **same** `i2c_master_bus_handle_t`. The driver creates that
+bus in `sen6x_init()`; include [`sen6x_esp.h`](src/sen6x_esp.h) to borrow it:
+
+```c
+#include "sen6x.h"
+#include "sen6x_esp.h"   // ESP-IDF-only; harmless to include on Arduino
+
+sen6x_init(&cfg);        // creates the bus
+
+i2c_master_bus_handle_t bus = sen6x_get_i2c_bus();   // non-NULL after init
+i2c_device_config_t oled_cfg = {
+    .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+    .device_address  = 0x3C,
+    .scl_speed_hz    = 400000,    // per-device speed; the SEN6x stays at 100 kHz
+};
+i2c_master_dev_handle_t oled_dev;
+ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &oled_cfg, &oled_dev));
+```
+
+The driver keeps ownership of the bus (it created it and will delete it);
+`sen6x_get_i2c_bus()` is a read-only accessor and returns `NULL` before
+`sen6x_init()` or on the Arduino build.
+
 ## API
 
 ```c
@@ -251,6 +278,17 @@ Get Product Name output** — if the printed name (`SEN62` / `SEN63C` / `SEN65` 
 execution-time waits are all working.
 
 ## Changelog
+
+### 1.2.0
+- **Expose the ESP-IDF I2C bus** so other devices can share the controller.
+  New ESP-IDF-only header [`sen6x_esp.h`](src/sen6x_esp.h) declares
+  `i2c_master_bus_handle_t sen6x_get_i2c_bus(void)`, which returns the
+  `i2c_master_bus_handle_t` the driver created in `sen6x_init()` (NULL before
+  init, and on the Arduino build). The driver still owns the bus; this is a
+  read-only accessor. Useful on single-controller targets (e.g. ESP32-C3)
+  where the SEN6x (0x6B) and an OLED (0x3C) must live on one bus. Purely
+  additive — no change to the core, the existing public API, `sen6x_config_t`,
+  or the Arduino path.
 
 ### 1.1.0
 - **Fix ESP-IDF 6.0 build:** the component now `REQUIRES esp_driver_i2c`
